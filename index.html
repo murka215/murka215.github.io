@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>Crypto Copy Lab — Paper Trading</title>
+<style>
+:root{--bg:#0b1220;--panel:#121c2d;--panel2:#172337;--text:#edf3ff;--muted:#9fb0c9;--line:#293750;--green:#47d7a0;--red:#ff7d89;--blue:#80aaff;--amber:#ffcc70}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b1220,#101b2c 60%,#0b1220);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45}
+main{max-width:1100px;margin:auto;padding:20px 14px 50px}.hero{padding:22px 18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,#172740,#121b2c);box-shadow:0 12px 30px #0002}
+.eyebrow{color:var(--green);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.hero h1{font-size:clamp(27px,6vw,42px);line-height:1.1;margin:9px 0}.hero p{color:var(--muted);max-width:740px;margin:8px 0}
+.notice{border-left:3px solid var(--amber);background:#332a1b55;padding:12px 14px;border-radius:8px;color:#ffe3ad;margin-top:16px;font-size:13px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:16px 0 12px;position:sticky;top:0;background:#0b1220ed;z-index:3}
+button,.tab{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 13px;border-radius:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+button.primary{background:var(--green);color:#092018;border-color:var(--green)}button.secondary{background:#1d3150}button.danger{color:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}
+.tab.active{background:var(--blue);color:#08152c;border-color:var(--blue)}
+section.panel{display:none}section.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 16px}
+.card,.box{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;min-width:0}
+.kpi .label{font-size:12px;color:var(--muted)}.kpi .value{font-size:23px;font-weight:800;margin-top:4px;overflow-wrap:anywhere}.kpi small{color:var(--muted)}
+h2{font-size:20px;margin:22px 0 10px}h3{font-size:16px;margin:0 0 10px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}input,select{width:100%;min-width:0;background:#0b1423;color:var(--text);border:1px solid #344662;border-radius:9px;padding:10px;font-size:15px}
+.field{min-width:130px;flex:1}.field input[type=file]{font-size:12px;padding:8px}.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:12px}table{border-collapse:collapse;width:100%;min-width:720px;font-size:13px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line);white-space:nowrap}th{background:#1a2940;color:#b9c9e2;position:sticky;top:0}tr:last-child td{border-bottom:0}.positive{color:var(--green)}.negative{color:var(--red)}.pill{display:inline-block;padding:3px 7px;border-radius:999px;background:#273752;color:#c7d8f4;font-size:11px;font-weight:700}.warn{color:var(--amber)}.empty{padding:25px 12px;text-align:center;color:var(--muted)}
+.progress{height:7px;background:#27344a;border-radius:99px;overflow:hidden;margin-top:8px}.progress span{display:block;height:100%;background:var(--green)}
+.help{background:#0d1727;border:1px dashed #344662;border-radius:12px;padding:12px;margin-top:12px;color:var(--muted);font-size:13px}
+code{background:#0a1321;padding:2px 5px;border-radius:5px;color:#c6d7ff}
+footer{margin-top:25px;color:var(--muted);font-size:12px}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:18px 14px}.kpi .value{font-size:20px}}
+@media(max-width:420px){.fields{grid-template-columns:1fr}.tabs button{padding:9px 11px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="eyebrow">Browser-only · no installation · no real orders</div>
+    <h1>Crypto Copy Lab</h1>
+    <p>Research crypto traders, score their risk-adjusted 90-day records, and simulate copying timestamped trades. Designed for iPhone Safari.</p>
+    <div class="notice"><strong>Paper mode only.</strong> This version never connects to an exchange account and cannot place live orders. No real capital is required. Demo rows are fictional examples, not real trader recommendations.</div>
+  </header>
+  <nav class="tabs" aria-label="App sections">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="research">Trader research</button>
+    <button class="tab" data-tab="trades">Paper trades</button>
+    <button class="tab" data-tab="settings">Settings & CSV</button>
+  </nav>
+
+  <section id="overview" class="panel active">
+    <div class="grid">
+      <div class="card kpi"><div class="label">Traders loaded</div><div id="kTraders" class="value">0</div><small>Imported records + demo</small></div>
+      <div class="card kpi"><div class="label">Eligible candidates</div><div id="kEligible" class="value">0</div><small>Meets current filters</small></div>
+      <div class="card kpi"><div class="label">Paper balance</div><div id="kBalance" class="value">$10,000.00</div><small>Virtual funds only</small></div>
+      <div class="card kpi"><div class="label">Paper net P&L</div><div id="kPnl" class="value">$0.00</div><small>Before any unmodelled costs</small></div>
+    </div>
+    <div class="box">
+      <div class="row"><h3>Research window</h3><span class="pill">90-day focus</span></div>
+      <p>18 July 2026 – 18 October 2026</p>
+      <p class="muted">Rank records only when the imported data covers the requested window. Leaderboard snapshots may show current rankings, not the entire historical period.</p>
+      <div id="topSummary" class="help">Load the included demo dataset or import your own records in Settings & CSV.</div>
+    </div>
+    <h2>Workflow</h2>
+    <div class="grid">
+      <div class="card"><span class="pill">01</span><h3 style="margin-top:10px">Import evidence</h3><p class="small">CSV metrics from official trader profiles or platform exports.</p></div>
+      <div class="card"><span class="pill">02</span><h3 style="margin-top:10px">Rank carefully</h3><p class="small">Return, drawdown, sample size, consistency and risk flags.</p></div>
+      <div class="card"><span class="pill">03</span><h3 style="margin-top:10px">Import trades</h3><p class="small">Use a timestamped trade feed with price and quantity.</p></div>
+      <div class="card"><span class="pill">04</span><h3 style="margin-top:10px">Simulate</h3><p class="small">Review simulated fills, P&L and risk-limit rejections.</p></div>
+    </div>
+  </section>
+
+  <section id="research" class="panel">
+    <div class="row"><div><h2>Trader research & ranking</h2><div class="muted small">Higher score is not a guarantee of future results.</div></div><button id="exportTraders">Export ranking CSV</button></div>
+    <div class="box">
+      <div class="fields">
+        <div><label for="minTrades">Minimum 90-day trades</label><input id="minTrades" type="number" min="0" value="30"></div>
+        <div><label for="maxDD">Maximum drawdown (%)</label><input id="maxDD" type="number" min="0" max="100" value="25"></div>
+        <div><label for="minDays">Minimum active days</label><input id="minDays" type="number" min="0" value="14"></div>
+      </div>
+      <p class="small">Default eligibility is intentionally cautious. Traders missing a key field are marked incomplete, not silently treated as low-risk.</p>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Trader / source</th><th>90d ROI</th><th>90d max DD</th><th>Trades</th><th>Active days</th><th>Score</th><th>Status</th></tr></thead><tbody id="traderRows"></tbody></table></div>
+    <div class="help"><strong>Score model:</strong> 35% capped 90-day ROI, 30% lower drawdown, 20% consistency/active days, 15% sample size. Severe drawdown, leverage above 10x, incomplete data, or a window mismatch can disqualify a record. This is a transparent screening heuristic, not a validated predictive model.</div>
+  </section>
+
+  <section id="trades" class="panel">
+    <div class="row"><div><h2>Paper-trading simulator</h2><div class="small muted">Uses only imported trade rows; no market orders or exchange connection.</div></div><button id="clearTrades" class="danger">Clear paper ledger</button></div>
+    <div class="grid">
+      <div class="card kpi"><div class="label">Virtual cash</div><div id="tCash" class="value">$10,000.00</div></div>
+      <div class="card kpi"><div class="label">Open positions</div><div id="tOpen" class="value">0</div></div>
+      <div class="card kpi"><div class="label">Closed trades</div><div id="tClosed" class="value">0</div></div>
+      <div class="card kpi"><div class="label">Net realized P&L</div><div id="tRealized" class="value">$0.00</div></div>
+    </div>
+    <div class="box">
+      <h3>Simulation rules</h3>
+      <ul class="small">
+        <li>CSV rows are processed in timestamp order.</li>
+        <li>BUY opens/adds a long position; SELL reduces/closes a long position. This starter does not simulate shorts, leverage, funding or partial-fill order books.</li>
+        <li>Trade notional is scaled to the configured copy ratio and capped by maximum position size and available virtual cash.</li>
+        <li>Fees are estimated from the configured fee rate. Slippage is not modelled, so results may look better than live execution.</li>
+        <li>Rows older than the selected import window are ignored; duplicate source IDs are skipped when provided.</li>
+      </ul>
+      <button class="primary" id="runSim">Run / rerun simulation from imported trade CSV</button>
+      <button id="exportLedger">Export paper ledger CSV</button>
+      <div id="simMsg" class="help">Import a trade CSV in Settings & CSV, then run the simulation.</div>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th>Time</th><th>Trader</th><th>Symbol</th><th>Side</th><th>Source price</th><th>Sim quantity</th><th>Fee</th><th>Result</th></tr></thead><tbody id="ledgerRows"></tbody></table></div>
+  </section>
+
+  <section id="settings" class="panel">
+    <h2>Settings & data import</h2>
+    <div class="box">
+      <h3>Virtual risk settings</h3>
+      <div class="fields">
+        <div><label for="virtualCash">Virtual starting balance (USD)</label><input id="virtualCash" type="number" min="1" step="100" value="10000"></div>
+        <div><label for="copyRatio">Copy ratio (fraction of source notional)</label><input id="copyRatio" type="number" min="0.01" max="1" step="0.01" value="0.10"></div>
+        <div><label for="maxPosition">Max single position (USD)</label><input id="maxPosition" type="number" min="1" step="10" value="500"></div>
+        <div><label for="feeRate">Fee estimate (%) per side</label><input id="feeRate" type="number" min="0" max="2" step="0.01" value="0.10"></div>
+        <div><label for="maxLoss">Stop simulation at drawdown (%)</label><input id="maxLoss" type="number" min="1" max="100" value="10"></div>
+        <div><label for="daysWindow">Trade import window (days)</label><input id="daysWindow" type="number" min="1" max="365" value="90"></div>
+      </div>
+      <div class="controls" style="margin-top:12px"><button class="primary" id="saveSettings">Apply settings & reset paper balance</button><button id="loadDemo">Load fictional demo dataset</button><button id="resetAll" class="danger">Reset app data</button></div>
+      <p class="small">The virtual balance is simulated money, not a deposit. Changing the settings resets the paper ledger.</p>
+    </div>
+    <div class="box">
+      <h3>Import trader metrics CSV</h3>
+      <p class="small">Required headings: <code>trader,source,window_start,window_end,roi90_pct,max_drawdown_pct,trades90,active_days90</code>. Optional: <code>roi30_pct,roi7_pct,win_rate_pct,avg_leverage,verified,notes</code>.</p>
+      <label for="metricsFile">Choose metrics CSV</label><input id="metricsFile" type="file" accept=".csv,text/csv">
+      <div class="controls" style="margin-top:10px"><button id="importMetrics" class="primary">Import metrics CSV</button><button id="downloadMetricsTemplate">Download metrics template</button></div>
+      <div id="metricsMsg" class="help">For the 90-day research, enter actual observed metrics and the period covered. Do not use a current 30-day ROI as if it were a 90-day return.</div>
+    </div>
+    <div class="box">
+      <h3>Import timestamped trade CSV</h3>
+      <p class="small">Required headings: <code>timestamp,trader,symbol,side,price,quantity</code>. Optional: <code>trade_id</code>. Side must be BUY or SELL. Quantity is the source trader's quantity, not your desired copy size.</p>
+      <label for="tradesFile">Choose trade feed CSV</label><input id="tradesFile" type="file" accept=".csv,text/csv">
+      <div class="controls" style="margin-top:10px"><button id="importTrades" class="primary">Import trade CSV</button><button id="downloadTradesTemplate">Download trade template</button></div>
+      <div id="tradesMsg" class="help">A leaderboard is not necessarily a trade feed. Use a permitted export or official API response that actually contains individual trades.</div>
+    </div>
+    <div class="box">
+      <h3>Data quality checklist</h3>
+      <ul class="small">
+        <li>Confirm the record spans 18 July–18 October 2026, not just the current 30 days.</li>
+        <li>Prefer exchange-linked profiles and official platform data; record the source and when you retrieved it.</li>
+        <li>Use realized returns net of deposits/withdrawals if possible; note ROI formula differences between platforms.</li>
+        <li>Compare drawdown, active days, trade count, leverage and follower profitability; don't rank on ROI alone.</li>
+        <li>Never paste API keys or passwords into this app. This version has no API-key field and no live trading capability.</li>
+      </ul>
+    </div>
+  </section>
+  <footer>Crypto Copy Lab · Local-only prototype · Data stays in this browser session and is not uploaded by this page. Demo data is fictional. This is a research and educational tool, not investment advice.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let traders=[],sourceTrades=[],ledger=[],settings={cash:10000,ratio:.10,maxPosition:500,feePct:.10,maxLoss:10,days:90};
+const demoTraders=[
+ {trader:"Example A (fictional)",source:"DEMO ONLY",window_start:"2026-07-18",window_end:"2026-10-18",roi90_pct:18,max_drawdown_pct:8,trades90:86,active_days90:42,win_rate_pct:58,avg_leverage:1,verified:"no",notes:"Illustrative balanced profile"},
+ {trader:"Example B (fictional)",source:"DEMO ONLY",window_start:"2026-07-18",window_end:"2026-10-18",roi90_pct:44,max_drawdown_pct:39,trades90:112,active_days90:31,win_rate_pct:47,avg_leverage:8,verified:"no",notes:"Illustrative high return/high risk"},
+ {trader:"Example C (fictional)",source:"DEMO ONLY",window_start:"2026-07-18",window_end:"2026-10-18",roi90_pct:9,max_drawdown_pct:4,trades90:34,active_days90:24,win_rate_pct:61,avg_leverage:1,verified:"no",notes:"Illustrative low drawdown"},
+ {trader:"Example D (fictional)",source:"DEMO ONLY",window_start:"2026-08-20",window_end:"2026-10-18",roi90_pct:25,max_drawdown_pct:12,trades90:51,active_days90:19,win_rate_pct:53,avg_leverage:3,verified:"no",notes:"Illustrative incomplete window"}
+];
+const demoTrades=[
+ {timestamp:"2026-09-01T10:00:00Z",trader:"Example A (fictional)",symbol:"BTCUSDT",side:"BUY",price:60000,quantity:.02,trade_id:"demo-1"},
+ {timestamp:"2026-09-01T12:00:00Z",trader:"Example A (fictional)",symbol:"BTCUSDT",side:"SELL",price:61000,quantity:.02,trade_id:"demo-2"},
+ {timestamp:"2026-09-02T09:00:00Z",trader:"Example C (fictional)",symbol:"ETHUSDT",side:"BUY",price:2500,quantity:.4,trade_id:"demo-3"},
+ {timestamp:"2026-09-02T14:00:00Z",trader:"Example C (fictional)",symbol:"ETHUSDT",side:"SELL",price:2450,quantity:.4,trade_id:"demo-4"}
+];
+function csvParse(text){let rows=[],row=[],cell="",q=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(q&&text[i+1]==='"'){cell+='"';i++}else q=!q}else if(c===','&&!q){row.push(cell);cell=""}else if((c==='\n'||c==='\r')&&!q){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row);row=[];cell=""}else cell+=c}row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row);if(!rows.length)return[];let headers=rows.shift().map(x=>x.trim().replace(/^\uFEFF/,""));return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??"").trim()])));}
+function toNum(v){if(v==null||v==="")return null;let n=Number(v);return Number.isFinite(n)?n:null}
+function fmt(n){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(n||0)}
+function pct(n){return n==null?"—":`${Number(n).toFixed(2)}%`}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function eligible(t){let start=Date.parse(t.window_start),end=Date.parse(t.window_end),goalStart=Date.parse("2026-07-18"),goalEnd=Date.parse("2026-10-18");return Number.isFinite(start)&&Number.isFinite(end)&&start<=goalStart&&end>=goalEnd&&t.roi90_pct!=null&&t.max_drawdown_pct!=null&&t.trades90!=null&&t.active_days90!=null&&t.trades90>=Number($("minTrades").value||0)&&t.max_drawdown_pct<=Number($("maxDD").value||100)&&t.active_days90>=Number($("minDays").value||0)&&!(t.avg_leverage!=null&&t.avg_leverage>10)&&t.max_drawdown_pct<40}
+function score(t){if(t.roi90_pct==null||t.max_drawdown_pct==null||t.trades90==null||t.active_days90==null)return null;let roi=Math.max(0,Math.min(100,t.roi90_pct+10))/100;let dd=Math.max(0,1-Math.min(100,t.max_drawdown_pct)/40);let consistency=Math.min(1,t.active_days90/45);let sample=Math.min(1,t.trades90/100);return Math.round(100*(.35*roi+.30*dd+.20*consistency+.15*sample))}
+function renderResearch(){let list=traders.map(t=>({...t,_score:score(t),_eligible:eligible(t)})).sort((a,b)=>(b._score??-1)-(a._score??-1));$("traderRows").innerHTML=list.map((t,i)=>`<tr><td>${i+1}</td><td><strong>${esc(t.trader)}</strong><br><span class="small">${esc(t.source||"Source not supplied")}</span></td><td class="${(t.roi90_pct||0)>=0?'positive':'negative'}">${pct(t.roi90_pct)}</td><td>${pct(t.max_drawdown_pct)}</td><td>${t.trades90??"—"}</td><td>${t.active_days90??"—"}</td><td>${t._score??"—"}</td><td>${t.source==="DEMO ONLY"?'<span class="pill warn">Fictional demo</span>':t._eligible?'<span class="pill positive">Eligible</span>':'<span class="pill">Review / exclude</span>'}</td></tr>`).join("")||'<tr><td colspan="8" class="empty">No trader records loaded.</td></tr>';let eligibleCount=list.filter(t=>t._eligible&&t.source!=="DEMO ONLY").length;$("kTraders").textContent=traders.length;$("kEligible").textContent=eligibleCount;$("topSummary").textContent=eligibleCount?`${eligibleCount} imported record(s) pass the current screening rules. Review their source evidence before trusting the ranking.`:"No imported non-demo trader currently passes all screening rules. Load source data covering the full 90-day window to identify candidates."}
+function renderLedger(){let realized=ledger.reduce((s,r)=>s+(r.realized||0)-(r.fee||0),0);$("tCash").textContent=fmt(settings.cash+realized);$("tOpen").textContent=Object.keys(positions).filter(k=>positions[k].qty>1e-10).length;$("tClosed").textContent=ledger.filter(r=>r.realized!=null).length;$("tRealized").textContent=fmt(realized);$("kBalance").textContent=fmt(settings.cash+realized);$("kPnl").textContent=fmt(realized);$("ledgerRows").innerHTML=ledger.slice().reverse().map(r=>`<tr><td>${esc(r.timestamp)}</td><td>${esc(r.trader)}</td><td>${esc(r.symbol)}</td><td>${esc(r.side)}</td><td>${fmt(r.price)}</td><td>${Number(r.qty).toFixed(8)}</td><td>${fmt(r.fee)}</td><td class="${(r.realized||0)>=0?'positive':'negative'}">${r.realized==null?"Open / added":fmt(r.realized)}</td></tr>`).join("")||'<tr><td colspan="8" class="empty">No paper trades yet.</td></tr>'}
+let positions={};
+function runSimulation(){ledger=[];positions={};let cash=settings.cash,peak=cash,halted=false;let sorted=sourceTrades.slice().sort((a,b)=>Date.parse(a.timestamp)-Date.parse(b.timestamp));let cutoff=Date.now()-settings.days*86400000;let seen=new Set();for(let t of sorted){let time=Date.parse(t.timestamp),price=toNum(t.price),qty=toNum(t.quantity),side=String(t.side||"").toUpperCase();if(!Number.isFinite(time)||time<cutoff||!price||price<=0||!qty||qty<=0||!["BUY","SELL"].includes(side))continue;let id=t.trade_id||`${t.timestamp}|${t.trader}|${t.symbol}|${side}|${price}|${qty}`;if(seen.has(id))continue;seen.add(id);if(halted)break;let key=`${t.trader}|${t.symbol}`,p=positions[key]||{qty:0,cost:0};let sourceNotional=price*qty,notional=Math.min(sourceNotional*settings.ratio,settings.maxPosition);let simQty=notional/price,fee=notional*settings.feePct/100,realized=null,result="Accepted";
+if(side==="BUY"){if(cash<notional+fee){result="Rejected: virtual cash";ledger.push({timestamp:t.timestamp,trader:t.trader,symbol:t.symbol,side,price,qty:0,fee:0,realized:null,result});continue;}p.qty+=simQty;p.cost+=notional;cash-=notional+fee;}
+else{if(p.qty<=0){result="Rejected: no long position";ledger.push({timestamp:t.timestamp,trader:t.trader,symbol:t.symbol,side,price,qty:0,fee:0,realized:null,result});continue;}simQty=Math.min(simQty,p.qty);notional=simQty*price;fee=notional*settings.feePct/100;let avg=p.cost/p.qty;realized=(price-avg)*simQty;p.qty-=simQty;p.cost-=avg*simQty;cash+=notional-fee;}
+positions[key]=p;ledger.push({timestamp:t.timestamp,trader:t.trader,symbol:t.symbol,side,price,qty:simQty,fee,realized,result});peak=Math.max(peak,cash);let dd=peak>0?(peak-cash)/peak*100:0;if(dd>=settings.maxLoss){halted=true;}}
+$("simMsg").textContent=`Processed ${ledger.length} row(s) from ${sourceTrades.length} imported source row(s). ${halted?"Stopped after configured cash-balance drawdown threshold. ":""}Cash-based drawdown excludes unrealized open-position losses; this is a simplified paper model, not a full portfolio accounting engine.`;renderLedger()}
+function download(name,content,type="text/csv"){let blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function csvEscape(v){let s=String(v??"");return /[,"\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function exportCSV(name,rows,headers){download(name,[headers.join(","),...rows.map(r=>headers.map(h=>csvEscape(r[h])).join(","))].join("\n"))}
+function loadDemo(){traders=demoTraders.map(x=>({...x}));sourceTrades=demoTrades.map(x=>({...x}));renderResearch();$("metricsMsg").textContent="Loaded four fictional trader examples. They are not real people and must not be used as trading recommendations."; $("tradesMsg").textContent="Loaded four fictional example trade rows. Run simulation to test the interface.";runSimulation()}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id===b.dataset.tab))}));
+["minTrades","maxDD","minDays"].forEach(id=>$(id).addEventListener("change",renderResearch));
+$("loadDemo").onclick=loadDemo;
+$("saveSettings").onclick=()=>{settings={cash:Math.max(1,toNum($("virtualCash").value)||10000),ratio:Math.min(1,Math.max(.01,toNum($("copyRatio").value)||.1)),maxPosition:Math.max(1,toNum($("maxPosition").value)||500),feePct:Math.min(2,Math.max(0,toNum($("feeRate").value)||0)),maxLoss:Math.min(100,Math.max(1,toNum($("maxLoss").value)||10)),days:Math.min(365,Math.max(1,toNum($("daysWindow").value)||90))};runSimulation();$("simMsg").textContent="Settings applied and simulation reset.";};
+$("clearTrades").onclick=()=>{ledger=[];positions={};renderLedger();$("simMsg").textContent="Paper ledger cleared. Source trade CSV remains loaded."};
+$("resetAll").onclick=()=>{traders=[];sourceTrades=[];ledger=[];positions={};settings={cash:10000,ratio:.1,maxPosition:500,feePct:.1,maxLoss:10,days:90};$("virtualCash").value=10000;$("copyRatio").value=.1;$("maxPosition").value=500;$("feeRate").value=.1;$("maxLoss").value=10;$("daysWindow").value=90;renderResearch();renderLedger();$("metricsMsg").textContent="App data reset.";};
+$("importMetrics").onclick=async()=>{let f=$("metricsFile").files[0];if(!f){$("metricsMsg").textContent="Choose a CSV file first.";return}try{let rows=csvParse(await f.text());traders=rows.map(r=>({...r,roi90_pct:toNum(r.roi90_pct),max_drawdown_pct:toNum(r.max_drawdown_pct),trades90:toNum(r.trades90),active_days90:toNum(r.active_days90),roi30_pct:toNum(r.roi30_pct),roi7_pct:toNum(r.roi7_pct),win_rate_pct:toNum(r.win_rate_pct),avg_leverage:toNum(r.avg_leverage)}));renderResearch();$("metricsMsg").textContent=`Imported ${traders.length} trader record(s). Check the window dates, source and data quality before using the ranking.`}catch(e){$("metricsMsg").textContent="Could not parse CSV: "+e.message}};
+$("importTrades").onclick=async()=>{let f=$("tradesFile").files[0];if(!f){$("tradesMsg").textContent="Choose a CSV file first.";return}try{sourceTrades=csvParse(await f.text()).map(r=>({...r,price:toNum(r.price),quantity:toNum(r.quantity)}));$("tradesMsg").textContent=`Imported ${sourceTrades.length} trade row(s). Tap Run simulation in Paper trades.`}catch(e){$("tradesMsg").textContent="Could not parse CSV: "+e.message}};
+$("runSim").onclick=runSimulation;
+$("exportTraders").onclick=()=>exportCSV("trader-ranking.csv",traders.map(t=>({...t,score:score(t),eligible:eligible(t)})),["trader","source","window_start","window_end","roi90_pct","max_drawdown_pct","trades90","active_days90","roi30_pct","roi7_pct","win_rate_pct","avg_leverage","verified","score","eligible","notes"]);
+$("exportLedger").onclick=()=>exportCSV("paper-ledger.csv",ledger,["timestamp","trader","symbol","side","price","qty","fee","realized","result"]);
+$("downloadMetricsTemplate").onclick=()=>download("trader-metrics-template.csv","trader,source,window_start,window_end,roi90_pct,max_drawdown_pct,trades90,active_days90,roi30_pct,roi7_pct,win_rate_pct,avg_leverage,verified,notes\nExample Trader,Official platform profile,2026-07-18,2026-10-18,12,8,75,28,4,1,56,1,yes,Replace with verified data");
+$("downloadTradesTemplate").onclick=()=>download("trade-feed-template.csv","timestamp,trader,symbol,side,price,quantity,trade_id\n2026-09-01T10:00:00Z,Example Trader,BTCUSDT,BUY,60000,0.02,example-001\n2026-09-01T12:00:00Z,Example Trader,BTCUSDT,SELL,61000,0.02,example-002");
+renderResearch();renderLedger();
+</script>
+</body></html>
